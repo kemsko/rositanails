@@ -47,3 +47,7 @@ La instrucción más reciente autoriza publicar la web antes del Worker. El modo
 Se ejecutó el workflow [Publish Rosita on Firebase](https://github.com/kemsko/rositanails/actions/runs/40939137970) desde la rama `deploy-firebase`, commit `e83c1c4`, con modo frontend-only real. El job se detuvo en «Check publishing authorization» con el mensaje: `Falta FIREBASE_SERVICE_ACCOUNT_ROSITANAILS en los Repository secrets.` La llamada de publicación a Firebase se omitió; esta ejecución no publicó ni modificó Hosting. No se ejecutó ningún despliegue de Cloudflare.
 
 La compilación local `build:production` con `VITE_FRONTEND_ONLY=true` y `VITE_DEMO_MODE=false` pasó, junto con 77 pruebas. El paso pendiente para reintentar es guardar la cuenta de servicio de publicación de Firebase en el secreto indicado. El acceso de escritura a GitHub Secrets no está disponible en la conexión del asistente; el propietario debe guardarlo directamente desde GitHub o conectar una integración Firebase con autorización de despliegue.
+
+## Vista accesible para el propietario
+
+Se publicó una [vista privada de Rosita](https://rosita-nails-vista-previa-e83c1c4.choiceriver17.chatgpt.site) mediante Sites, con estado del proveedor `succeeded`. Permite revisar el diseño y la navegación del frontend real mientras Firebase Hosting continúa pendiente de autorización. Mantiene las reservas deshabilitadas y no usa el modo demo. La identidad para actualizarla está en `PREVIEW.md`; no se modificó ningún Worker de la cuenta del usuario.
