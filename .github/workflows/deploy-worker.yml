@@ -1,0 +1,33 @@
+name: Deploy Rosita Worker
+on:
+  workflow_dispatch:
+  push:
+    branches: [deploy-cloudflare]
+permissions:
+  contents: read
+concurrency:
+  group: rosita-worker-production
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Check deployment credentials are configured
+        run: |
+          node -e 'if (!process.env.CLOUDFLARE_API_TOKEN || !process.env.CLOUDFLARE_ACCOUNT_ID) { console.error("Agregá CLOUDFLARE_API_TOKEN y CLOUDFLARE_ACCOUNT_ID a los secrets de GitHub Actions."); process.exit(1); }'
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: npm run worker:check
+      - name: Prepare workers.dev without renaming an existing subdomain
+        run: node scripts/bootstrap-cloudflare.mjs
+      - run: npm run worker:deploy

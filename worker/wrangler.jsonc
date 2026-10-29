@@ -6,10 +6,16 @@
   "vars": {
     "FIREBASE_PROJECT_ID": "rositanails",
     "ALLOWED_ORIGIN": "https://rositanails.web.app",
-    "CLOUDINARY_CLOUD_NAME": "",
-    "CLOUDINARY_API_KEY": ""
+    "CLOUDINARY_CLOUD_NAME": "dvnhszmdt",
+    "CLOUDINARY_FOLDER_MODE": "dynamic",
   },
-  "ratelimits": [{"name":"API_RATE_LIMITER","namespace_id":"1001","simple":{"limit":60,"period":60}}],
+  "ratelimits": [
+    {
+      "name": "API_RATE_LIMITER",
+      "namespace_id": "1001",
+      "simple": { "limit": 60, "period": 60 },
+    },
+  ],
   "triggers": { "crons": ["*/10 * * * *"] },
-  "observability": {"enabled": true, "head_sampling_rate": 0.1}
+  "observability": { "enabled": true, "head_sampling_rate": 0.1 },
 }

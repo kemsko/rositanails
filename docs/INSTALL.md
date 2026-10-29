@@ -4,6 +4,28 @@ El proyecto Firebase del propietario es `rositanails`. La aplicación web regist
 
 No se requiere Supabase, Firebase Storage, Firebase Cloud Functions ni Firebase App Hosting. Mantener Firebase en Spark. Se usa Firebase Hosting clásico para la web estática.
 
+## Datos para completar la conexión
+
+El propietario ya proporcionó la configuración pública de Firebase y una captura que muestra Google habilitado en Authentication. No hay que solicitar de nuevo esa configuración. La carpeta de Cloudinary elegida es `ROSITA`.
+
+El Cloud name **`dvnhszmdt`** ya está guardado en el código. La captura muestra la carpeta **`ROSITA`**, en mayúsculas; se usa ese nombre exacto. El Worker todavía no existe. Para permitir que el asistente lo cree sin pegar credenciales en el chat, seguir la sección de despliegue con GitHub Actions que aparece abajo.
+
+Las credenciales se introducen directamente en Cloudflare, en **Workers & Pages → el Worker → Settings → Variables and Secrets → Add → Secret**:
+
+| Nombre en el Worker     | Valor que se introduce directamente allí                                       |
+| ----------------------- | ------------------------------------------------------------------------------ |
+| `CLOUDINARY_API_KEY`    | API key del entorno de Cloudinary donde está la carpeta `ROSITA`               |
+| `CLOUDINARY_API_SECRET` | API secret del mismo par de credenciales de Cloudinary                         |
+| `FIREBASE_CLIENT_EMAIL` | Campo `client_email` de la cuenta de servicio dedicada a Rosita                |
+| `FIREBASE_PRIVATE_KEY`  | Campo `private_key` de esa cuenta de servicio                                  |
+| `STAFF_UIDS`            | UID de Firebase Authentication de cada persona autorizada, separados por comas |
+
+El bloque `firebaseConfig` de la app web identifica el proyecto y permite iniciar sesión. No autoriza al Worker a leer o escribir citas: para eso se configura la cuenta de servicio con permisos mínimos descrita más abajo. No pegar API secrets, JSON de cuentas de servicio, claves privadas ni tokens en el chat o en GitHub.
+
+La conexión oficial de Firebase para operar desde el asistente es independiente de las credenciales de ejecución del Worker. Su configuración pública por sí sola tampoco permite publicar reglas ni Hosting desde esta sesión.
+
+Fuentes: [credenciales de Cloudinary](https://cloudinary.com/documentation/finding_your_credentials_tutorial), [secretos en Cloudflare](https://developers.cloudflare.com/workers/configuration/secrets/), [autorización del servidor en Firebase](https://firebase.google.com/docs/admin/setup#initialize_the_sdk_in_non-google_environments).
+
 ## 1. Recuperar el código y probar
 
 Requisitos: Git y Node.js 24.
@@ -43,16 +65,34 @@ Revisar antes las reglas existentes: este archivo las reemplaza y está pensado 
 
 ## 3. Cloudinary
 
-Crear o usar el entorno de imágenes de tu cuenta. En el Worker configurar:
+Usar el entorno de imágenes donde el propietario creó la carpeta `ROSITA`. En el Worker configurar:
 
-- Variables públicas `CLOUDINARY_CLOUD_NAME` y `CLOUDINARY_API_KEY`.
-- Secreto `CLOUDINARY_API_SECRET`.
+- Variable `CLOUDINARY_CLOUD_NAME`.
+- Secretos `CLOUDINARY_API_KEY` y `CLOUDINARY_API_SECRET`, del mismo par de credenciales.
+
+Todas las subidas del proyecto se asignan a `ROSITA` en la biblioteca de medios. En modo de carpetas dinámicas se envía `asset_folder=ROSITA`; conservar un prefijo `ROSITA/` en el identificador no basta por sí solo para elegir esa carpeta visual. Para cuentas heredadas en modo fijo, configurar `CLOUDINARY_FOLDER_MODE=fixed`; el prefijo del identificador mantiene los archivos dentro de `ROSITA` y sus subcarpetas. El valor configurado en `worker/wrangler.jsonc` es `dynamic`. No hay que cambiar el modo de carpetas de la cuenta para conectar Rosita. [Referencia oficial de modos de carpetas](https://cloudinary.com/documentation/folder_modes#public_ids_with_slashes).
 
 No se usa un preset de subida pública sin firma. Las imágenes pasan por el Worker, que verifica sesión, permisos, formato declarado y tamaño, y firma la petición a Cloudinary.
 
 Las referencias y resultados se suben con tipo **authenticated**. Se consultan a través del Worker, después de comprobar el propietario o el rol del personal. El navegador recibe el archivo, sin una dirección pública permanente. Logo y fotos del catálogo son públicos y solo el personal puede subirlos. Hasta 5 MB por imagen; referencias y resultados admiten JPG, PNG y WebP.
 
 ## 4. Cloudflare Worker
+
+### Dar acceso de despliegue mediante GitHub Actions
+
+Esta vía permite que el asistente prepare y ejecute el despliegue desde el repositorio sin recibir el token por el chat.
+
+1. En [Cloudflare → API Tokens](https://dash.cloudflare.com/profile/api-tokens), crear un token personalizado para la cuenta elegida con **Account → Workers Scripts → Edit**, limitado a **esa cuenta**. No usar Global API Key ni permisos sobre DNS o todas las cuentas. Elegir una caducidad adecuada al despliegue.
+2. Copiar el **Account ID** de esa cuenta de Cloudflare. No es el nombre de usuario ni el Zone ID de un dominio.
+3. Abrir [los secretos de Actions del repositorio](https://github.com/kemsko/rositanails/settings/secrets/actions) y agregar dos **Repository secrets**: `CLOUDFLARE_API_TOKEN` y `CLOUDFLARE_ACCOUNT_ID`.
+4. Informar al asistente que ambos secretos ya están guardados. No enviar sus valores ni capturas que muestren el token.
+5. El workflow `.github/workflows/deploy-worker.yml` se puede ejecutar manualmente desde Actions, o al crear/actualizar la rama `deploy-cloudflare`. El asistente puede publicar esa rama desde el código comprobado. Las subidas normales a `main` conservan el código sin activar este despliegue.
+
+El workflow instala las dependencias, ejecuta las pruebas, compila y empaqueta antes de desplegar `rosita-api`. Si la cuenta todavía no tiene subdominio workers.dev, prepara `rosita-` seguido de ocho caracteres del Account ID. Si ya tiene uno, lo conserva. El script no cambia un subdominio existente.
+
+Este acceso crea y publica el Worker. Los secretos de ejecución de Firebase, Cloudinary y Telegram se agregan por separado en Cloudflare, como indica la tabla anterior. Tener el Worker publicado por sí solo no significa que las reservas ya estén conectadas.
+
+### Alternativa desde tu computadora
 
 Desde tu computadora:
 
@@ -64,7 +104,7 @@ Editar `worker/wrangler.jsonc`:
 
 - Mantener `FIREBASE_PROJECT_ID=rositanails`.
 - Cambiar `ALLOWED_ORIGIN` al dominio exacto de la web, sin barra final. Para varios dominios autorizados, separarlos por comas. No usar `*`.
-- Configurar el cloud name y API key de Cloudinary.
+- Configurar el cloud name de Cloudinary como variable; la API key y el API secret se guardan como secretos.
 
 Guardar los secretos con estos comandos. La CLI solicita cada valor de forma interactiva; no incluir valores en la línea de comandos ni en archivos del repositorio:
 
@@ -72,6 +112,7 @@ Guardar los secretos con estos comandos. La CLI solicita cada valor de forma int
 npx wrangler secret put FIREBASE_CLIENT_EMAIL --config worker/wrangler.jsonc
 npx wrangler secret put FIREBASE_PRIVATE_KEY --config worker/wrangler.jsonc
 npx wrangler secret put STAFF_UIDS --config worker/wrangler.jsonc
+npx wrangler secret put CLOUDINARY_API_KEY --config worker/wrangler.jsonc
 npx wrangler secret put CLOUDINARY_API_SECRET --config worker/wrangler.jsonc
 npx wrangler secret put TELEGRAM_BOT_TOKEN --config worker/wrangler.jsonc
 npx wrangler secret put TELEGRAM_CHAT_ID --config worker/wrangler.jsonc

@@ -15,6 +15,10 @@ import {
   startTime,
 } from "./domain";
 import { Firestore, type FirebaseEnv } from "./firestore";
+import {
+  CLOUDINARY_ROOT_FOLDER,
+  cloudinaryUploadParameters,
+} from "./cloudinary";
 interface Env extends FirebaseEnv {
   ALLOWED_ORIGIN: string;
   STAFF_UIDS: string;
@@ -23,6 +27,7 @@ interface Env extends FirebaseEnv {
   CLOUDINARY_CLOUD_NAME: string;
   CLOUDINARY_API_KEY: string;
   CLOUDINARY_API_SECRET: string;
+  CLOUDINARY_FOLDER_MODE?: "dynamic" | "fixed";
   API_RATE_LIMITER?: {
     limit(input: { key: string }): Promise<{ success: boolean }>;
   };
@@ -171,12 +176,11 @@ async function route(req: Request, env: Env): Promise<Response> {
     if (!env.CLOUDINARY_API_SECRET || !env.CLOUDINARY_CLOUD_NAME)
       throw new ApiError(503, "Todavía falta conectar las fotografías.");
     const file = await imageFile(req);
-    const params = {
-      public_id: `rosita/branding/${crypto.randomUUID()}`,
-      timestamp: String(Math.floor(Date.now() / 1000)),
-      type: "upload",
-      overwrite: "false",
-    };
+    const params = cloudinaryUploadParameters(
+      `${CLOUDINARY_ROOT_FOLDER}/branding/${crypto.randomUUID()}`,
+      "upload",
+      env.CLOUDINARY_FOLDER_MODE,
+    );
     const upload = new FormData();
     upload.set("file", file);
     upload.set("api_key", env.CLOUDINARY_API_KEY);
@@ -413,13 +417,12 @@ async function route(req: Request, env: Env): Promise<Response> {
           : "reference";
       if (kind === "result") staffOnly(user);
       const photoId = crypto.randomUUID();
-      const publicId = `rosita/${appointment.uid}/${photoId}`;
-      const params = {
-        public_id: publicId,
-        timestamp: String(Math.floor(Date.now() / 1000)),
-        type: "authenticated",
-        overwrite: "false",
-      };
+      const publicId = `${CLOUDINARY_ROOT_FOLDER}/${appointment.uid}/${photoId}`;
+      const params = cloudinaryUploadParameters(
+        publicId,
+        "authenticated",
+        env.CLOUDINARY_FOLDER_MODE,
+      );
       const upload = new FormData();
       upload.set("file", file);
       upload.set("api_key", env.CLOUDINARY_API_KEY);

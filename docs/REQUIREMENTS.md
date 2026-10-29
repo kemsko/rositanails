@@ -20,6 +20,7 @@ Origen: el propietario adjuntó una conversación anterior después de informar 
 - Subir todo el código a GitHub para conservarlo fuera del entorno de OpenAI.
 - Usar Firebase para cuentas y datos.
 - Usar un Worker de Cloudflare para Telegram y Cloudinary para imágenes.
+- Guardar todas las imágenes del proyecto dentro de la carpeta `ROSITA` de Cloudinary, sin mezclarlas con otros proyectos.
 - Proyecto Firebase `rositanails`; configuración pública proporcionada por el propietario.
 
 ## Supuestos de esta implementación, por revisar

@@ -19,9 +19,9 @@ No hay herramienta de navegador disponible en este entorno para comprobar visual
 
 ## Todavía no conectado ni publicado
 
-- Firebase: el propietario confirmó que creó proyecto y base. Falta verificar que sea Firestore `(default)`, habilitar Google, publicar reglas/índices y conectar una cuenta de servicio con permisos mínimos al Worker.
-- Cloudflare: falta la cuenta autorizada, configurar variables y secretos, desplegar el Worker y obtener su URL.
-- Cloudinary: falta configurar la cuenta y sus credenciales directamente en Cloudflare.
+- Firebase: el propietario confirmó que creó proyecto y base. Una captura del propietario muestra Google habilitado en Authentication. Falta verificar que la base sea Firestore `(default)`, publicar reglas/índices y conectar una cuenta de servicio con permisos mínimos al Worker.
+- Cloudflare: el propietario confirmó que el Worker aún no existe. Se preparó un workflow de despliegue desde GitHub Actions. Falta guardar CLOUDFLARE_API_TOKEN y CLOUDFLARE_ACCOUNT_ID como Repository secrets, crear/publicar el Worker y configurar sus secretos de ejecución.
+- Cloudinary: el propietario creó la carpeta `ROSITA`. Las subidas se asignan a esa carpeta. El Cloud name `dvnhszmdt` ya está configurado en el código. Falta configurar API key y API secret directamente como secretos en Cloudflare y verificar una subida real.
 - Telegram: falta configurar el bot y su chat en los secretos del Worker y probar entrega.
 - Frontend: falta configurar la URL de la API, compilar en modo real y publicar en Firebase Hosting.
 - Negocio: faltan precios, servicios, horarios definitivos, contacto, imágenes y revisión de las reglas de cancelación.
