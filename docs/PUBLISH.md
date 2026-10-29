@@ -31,6 +31,13 @@ La cuenta dedicada al despliegue necesita en el proyecto `rositanails`:
 - Firebase Hosting Admin: `roles/firebasehosting.admin`.
 - API Keys Viewer: `roles/serviceusage.apiKeysViewer`, requerido actualmente por el despliegue mediante Firebase CLI.
 
+Para preparar esa cuenta sin dar acceso de administrador a todo el proyecto:
+
+1. Abrir [Cuentas de servicio de Google Cloud, proyecto rositanails](https://console.cloud.google.com/iam-admin/serviceaccounts?project=rositanails) con la cuenta propietaria.
+2. Crear una cuenta llamada `rosita-hosting` y asignarle los dos roles indicados arriba, únicamente en el proyecto `rositanails`.
+3. Dentro de esa cuenta, ir a **Keys / Claves → Add key / Agregar clave → Create new key / Crear clave nueva → JSON**. Guardar el archivo descargado de forma privada.
+4. En GitHub, abrir **New repository secret**, poner el nombre `FIREBASE_SERVICE_ACCOUNT_ROSITANAILS` y pegar el contenido completo del JSON en el campo **Secret**. No adjuntar ese JSON al chat ni añadirlo al código.
+
 El propietario guarda su JSON directamente en los [Repository secrets de Actions](https://github.com/kemsko/rositanails/settings/secrets/actions), con nombre **FIREBASE_SERVICE_ACCOUNT_ROSITANAILS**. No se sube al código ni al chat. Esta cuenta es distinta de la cuenta de ejecución del Worker, que se configurará después.
 
 El workflow comprueba que la credencial exista y pertenezca a `rositanails`, instala las dependencias, ejecuta las pruebas, compila la web y publica el canal **live** del sitio **rositanails** mediante la acción oficial de Firebase. La variante frontend-only no necesita URL de API ni hace solicitudes a Cloudflare.
@@ -63,3 +70,7 @@ Esto publica únicamente Hosting. El Worker, las reglas/índices de Firestore y 
 - [Firebase Hosting con GitHub](https://firebase.google.com/docs/hosting/github-integration)
 - [Roles de Hosting y requisito API Keys Viewer](https://firebase.google.com/docs/projects/iam/roles-predefined-product#firebase_hosting_roles)
 - [Acción oficial de publicación](https://github.com/FirebaseExtended/action-hosting-deploy)
+
+## Último resultado comprobado
+
+El [primer intento de publicación sin Worker](https://github.com/kemsko/rositanails/actions/runs/40939137970) se detuvo porque falta `FIREBASE_SERVICE_ACCOUNT_ROSITANAILS`. La publicación a Firebase no llegó a ejecutarse. Una vez que el propietario guarde ese secreto, se puede reintentar el job fallido; no es necesario crear un Worker para esta publicación.
