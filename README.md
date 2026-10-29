@@ -50,6 +50,7 @@ Para conectar las cuentas y publicar, seguir **[la guía de instalación](docs/I
 ## Documentación para retomar el trabajo
 
 - [Estado real y pendientes](docs/STATUS.md)
+- [Publicación real en rositanails.firebaseapp.com](docs/PUBLISH.md)
 - [Instalación de Firebase, Cloudflare y Cloudinary](docs/INSTALL.md)
 - [Requisitos recuperados y decisiones pendientes](docs/REQUIREMENTS.md)
 - [Operación, respaldos y límites conocidos](docs/OPERATIONS.md)

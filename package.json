@@ -10,7 +10,8 @@
     "worker:dev": "wrangler dev --config worker/wrangler.jsonc",
     "worker:check": "wrangler deploy --dry-run --config worker/wrangler.jsonc --outdir ../work/worker-build",
     "worker:deploy": "wrangler deploy --config worker/wrangler.jsonc",
-    "format": "prettier --write src worker/src tests docs README.md"
+    "format": "prettier --write src worker/src tests docs README.md",
+    "build:production": "node scripts/production-config.mjs && npm run build"
   },
   "dependencies": {
     "firebase": "^13.1.0",

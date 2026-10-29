@@ -153,7 +153,7 @@ export default function App() {
     [error, setError] = useState(""),
     [menu, setMenu] = useState(false),
     [loading, setLoading] = useState(true);
-  useEffect(() => api.watchSession(setUser), []);
+  useEffect(() => api.watchSession(setUser, setError), []);
   useEffect(() => {
     api
       .getSettings()

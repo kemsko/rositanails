@@ -79,7 +79,10 @@ function demoData(): { settings: Settings; appointments: Appointment[] } {
 function saveDemo(data: ReturnType<typeof demoData>) {
   localStorage.setItem("rosita-demo-v1", JSON.stringify(data));
 }
-export function watchSession(callback: (user: Me | null) => void) {
+export function watchSession(
+  callback: (user: Me | null) => void,
+  onError: (message: string) => void = () => {},
+) {
   if (demo) {
     listener = callback;
     callback(currentDemo);
@@ -87,14 +90,26 @@ export function watchSession(callback: (user: Me | null) => void) {
       listener = undefined;
     };
   }
-  return onAuthStateChanged(auth, async (user) => {
-    if (!user) return callback(null);
+  let sequence = 0;
+  const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const current = ++sequence;
+    // Google authentication alone does not authorize a Rosita session.
+    callback(null);
+    if (!user) return;
     try {
-      callback(await request<Me>("/me"));
+      const verified = await request<Me>("/me");
+      if (current === sequence) callback(verified);
     } catch {
-      callback(null);
+      if (current !== sequence) return;
+      onError(
+        "Tu cuenta de Google se conectó, pero no pudimos verificar tu acceso a Rosita. Actualizá la página para reintentar.",
+      );
     }
   });
+  return () => {
+    sequence++;
+    unsubscribe();
+  };
 }
 export async function login(staff = false) {
   if (demo) {

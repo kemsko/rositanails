@@ -1,18 +1,19 @@
 {
   "$schema": "../node_modules/wrangler/config-schema.json",
   "name": "rosita-api",
+  "account_id": "9e5ee14a9333e0fe09289912eddb1658",
   "main": "src/index.ts",
   "compatibility_date": "2026-10-01",
   "vars": {
     "FIREBASE_PROJECT_ID": "rositanails",
-    "ALLOWED_ORIGIN": "https://rositanails.web.app",
+    "ALLOWED_ORIGIN": "https://rositanails.firebaseapp.com,https://rositanails.web.app",
     "CLOUDINARY_CLOUD_NAME": "dvnhszmdt",
     "CLOUDINARY_FOLDER_MODE": "dynamic",
   },
   "ratelimits": [
     {
       "name": "API_RATE_LIMITER",
-      "namespace_id": "1001",
+      "namespace_id": "1436312784",
       "simple": { "limit": 60, "period": 60 },
     },
   ],

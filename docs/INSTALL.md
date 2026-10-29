@@ -83,12 +83,12 @@ Las referencias y resultados se suben con tipo **authenticated**. Se consultan a
 Esta vía permite que el asistente prepare y ejecute el despliegue desde el repositorio sin recibir el token por el chat.
 
 1. En [Cloudflare → API Tokens](https://dash.cloudflare.com/profile/api-tokens), crear un token personalizado para la cuenta elegida con **Account → Workers Scripts → Edit**, limitado a **esa cuenta**. No usar Global API Key ni permisos sobre DNS o todas las cuentas. Elegir una caducidad adecuada al despliegue.
-2. Copiar el **Account ID** de esa cuenta de Cloudflare. No es el nombre de usuario ni el Zone ID de un dominio.
-3. Abrir [los secretos de Actions del repositorio](https://github.com/kemsko/rositanails/settings/secrets/actions) y agregar dos **Repository secrets**: `CLOUDFLARE_API_TOKEN` y `CLOUDFLARE_ACCOUNT_ID`.
-4. Informar al asistente que ambos secretos ya están guardados. No enviar sus valores ni capturas que muestren el token.
+2. El **Account ID** ya se recibió en la captura y está configurado para el nuevo recurso de Rosita; no hace falta enviarlo otra vez.
+3. El Account ID proporcionado por el propietario ya está configurado. Abrir [los secretos de Actions del repositorio](https://github.com/kemsko/rositanails/settings/secrets/actions) y agregar el **Repository secret** `CLOUDFLARE_API_TOKEN`. El token se pega únicamente en el campo Secret de GitHub; no en el chat ni como archivo del repositorio.
+4. Informar al asistente que el secreto ya está guardado. No enviar sus valores ni capturas que muestren el token.
 5. El workflow `.github/workflows/deploy-worker.yml` se puede ejecutar manualmente desde Actions, o al crear/actualizar la rama `deploy-cloudflare`. El asistente puede publicar esa rama desde el código comprobado. Las subidas normales a `main` conservan el código sin activar este despliegue.
 
-El workflow instala las dependencias, ejecuta las pruebas, compila y empaqueta antes de desplegar `rosita-api`. Si la cuenta todavía no tiene subdominio workers.dev, prepara `rosita-` seguido de ocho caracteres del Account ID. Si ya tiene uno, lo conserva. El script no cambia un subdominio existente.
+El workflow instala las dependencias, ejecuta las pruebas, compila y empaqueta antes de crear `rosita-api`. Antes de subir código comprueba que ese nombre no exista; si existe, se detiene para evitar sobrescribir un recurso ajeno. No administra el subdominio workers.dev de la cuenta ni modifica otros Workers. El proyecto de opticafel queda expresamente fuera de alcance. Para futuras actualizaciones de Rosita habrá que identificar el recurso creado en el primer despliegue y autorizar su flujo de actualización; este workflow de creación no adopta automáticamente recursos existentes.
 
 Este acceso crea y publica el Worker. Los secretos de ejecución de Firebase, Cloudinary y Telegram se agregan por separado en Cloudflare, como indica la tabla anterior. Tener el Worker publicado por sí solo no significa que las reservas ya estén conectadas.
 
@@ -103,7 +103,7 @@ npx wrangler login
 Editar `worker/wrangler.jsonc`:
 
 - Mantener `FIREBASE_PROJECT_ID=rositanails`.
-- Cambiar `ALLOWED_ORIGIN` al dominio exacto de la web, sin barra final. Para varios dominios autorizados, separarlos por comas. No usar `*`.
+- Mantener ambos dominios de Hosting en `ALLOWED_ORIGIN`: `https://rositanails.firebaseapp.com,https://rositanails.web.app`, sin barras finales. Para varios dominios autorizados, separarlos por comas. No usar `*`.
 - Configurar el cloud name de Cloudinary como variable; la API key y el API secret se guardan como secretos.
 
 Guardar los secretos con estos comandos. La CLI solicita cada valor de forma interactiva; no incluir valores en la línea de comandos ni en archivos del repositorio:
@@ -141,7 +141,7 @@ npm run build
 npx firebase-tools deploy --only hosting --project rositanails
 ```
 
-Firebase mostrará la dirección real al completar el despliegue. El proyecto está configurado para `https://rositanails.web.app`, pero no se debe anunciar como publicado hasta comprobar el despliegue.
+Firebase mostrará la dirección real al completar el despliegue. El dominio solicitado por el propietario es `https://rositanails.firebaseapp.com`; Firebase también ofrece `https://rositanails.web.app`. Ambos están permitidos en la API. No anunciar ninguno como publicado hasta comprobar un despliegue exitoso. Para la publicación real, seguir [PUBLISH.md](PUBLISH.md).
 
 ## 6. Configurar Rosita y habilitar reservas
 
