@@ -28,7 +28,7 @@ No hay herramienta de navegador disponible en este entorno para comprobar visual
 - Negocio: faltan precios, servicios, horarios definitivos, contacto, imágenes y revisión de las reglas de cancelación.
 - Respaldos: falta implementar y probar el procedimiento de respaldo/restauración de datos e imágenes por separado del código.
 
-Las reservas de producción empiezan deshabilitadas y el catálogo real empieza vacío. Los ejemplos solo se activan mediante `VITE_DEMO_MODE=true`, con un aviso visible. No hay un enlace de producción verificado.
+Las reservas de producción empiezan deshabilitadas y el catálogo real empieza vacío. Los ejemplos solo se activan mediante `VITE_DEMO_MODE=true`, con un aviso visible. No hay un enlace de Firebase Hosting verificado; la vista temporal de Sites se documenta al final de este archivo.
 
 ## Origen y decisiones
 

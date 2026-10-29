@@ -2,7 +2,7 @@
 
 Web de reservas de Rosita, reconstruida y conservada en GitHub. La configuración pública corresponde al proyecto Firebase **rositanails** del propietario.
 
-**Estado:** código reconstruido y comprobado localmente; los servicios reales todavía no están conectados ni hay un despliegue verificado. No anunciar la aplicación como lista para recibir clientas hasta completar la instalación y las pruebas de los servicios.
+**Estado:** código reconstruido y comprobado localmente; los servicios reales todavía no están conectados ni hay un despliegue verificado en Firebase Hosting. No anunciar la aplicación como lista para recibir clientas hasta completar la instalación y las pruebas de los servicios.
 
 Para revisar el diseño ahora: [abrir la vista privada publicada de Rosita](https://rosita-nails-vista-previa-e83c1c4.choiceriver17.chatgpt.site). Esta vista temporal permite ver el frontend; Firebase Hosting sigue pendiente de autorización y las reservas todavía están deshabilitadas.
 
