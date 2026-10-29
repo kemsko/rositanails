@@ -1,0 +1,7 @@
+# Set in Cloudflare using wrangler secret put NAME. Never commit actual values.
+FIREBASE_CLIENT_EMAIL=
+FIREBASE_PRIVATE_KEY=
+STAFF_UIDS=
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHAT_ID=
+CLOUDINARY_API_SECRET=

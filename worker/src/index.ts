@@ -87,7 +87,6 @@ async function route(req:Request, env:Env): Promise<Response> {
       const config = settings ?? initialSettings; assertBookable(config,input,now);
       const service = config.services.find(s => s.id===input.serviceId && s.active);
       if (!service) throw new ApiError(400,'Elegí un servicio disponible.');
-      if ((active?.ids.length ?? 0) >= 3) throw new ApiError(409,'Podés tener hasta tres citas pendientes o confirmadas.');
       const updatedDay = occupy(day ?? {appointments:{}},input.slot,id,service.duration);
       const appointment:Appointment = {...input,id,uid:user.uid,email:user.email,serviceName:service.name,price:service.price,duration:service.duration,status:'pending',changes:0,createdAt:new Date(now).toISOString(),updatedAt:new Date(now).toISOString()};
       return {result:appointment,writes:[db.write(`appointments/${id}`,appointment),db.write(`days/${input.date}`,updatedDay),db.write(`active/${user.uid}`,{ids:[...(active?.ids ?? []),id]}),eventFor(db,appointment,'Nueva solicitud')]};
@@ -136,7 +135,7 @@ async function route(req:Request, env:Env): Promise<Response> {
       const existing = await db.query<Photo>('photos','appointmentId',id,20);
       if (existing.length>=8) throw new ApiError(409,'Esta cita ya tiene ocho fotografías.');
       const buffer = await limitedBody(req,6*1024*1024);
-      const form = await new Response(buffer,{headers:{'Content-Type':req.headers.get('Content-Type') ?? ''}}).formData();
+      const form = await new Response(buffer.buffer as ArrayBuffer,{headers:{'Content-Type':req.headers.get('Content-Type') ?? ''}}).formData();
       const file = form.get('file');
       if (!(file instanceof File) || file.size>5*1024*1024 || !['image/jpeg','image/png','image/webp'].includes(file.type)) throw new ApiError(400,'Usá una imagen JPG, PNG o WebP de hasta 5 MB.');
       const kind = form.get('kind')==='result' ? 'result' : 'reference';
