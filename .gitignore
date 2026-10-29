@@ -1,0 +1,12 @@
+node_modules/
+dist/
+work/
+.wrangler/
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+*.pem
+*service-account*.json
+firebase-debug.log
