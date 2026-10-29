@@ -24,7 +24,7 @@ Las pruebas y exportaciones mencionadas en la conversación anterior no equivale
 - Cuatro horarios de citas al día; horarios exactos y días de atención pendientes de definir.
 - Evitar reservas duplicadas, incluso cuando dos clientas soliciten el mismo horario a la vez.
 - Confirmación manual de las reservas por el personal.
-- Un solo cambio de cita permitido por clienta, con al menos 24 horas de anticipación. Se debe precisar si esa anticipación aplica también al nuevo horario.
+- Un solo cambio permitido por cita, con al menos 24 horas de anticipación. Se debe precisar si esa anticipación aplica también al nuevo horario.
 - Inicio de sesión con Google.
 - Permisos distintos para clientas y personal, comprobados por el backend.
 - Panel del personal para gestionar citas e historial de clientas.
@@ -34,19 +34,19 @@ Las pruebas y exportaciones mencionadas en la conversación anterior no equivale
 - Botones hacia WhatsApp; no se acordó mensajería automática mediante la API de WhatsApp.
 - Objetivo anterior de comenzar sin costo mensual, sujeto a cuotas.
 
-## Nueva propuesta: Firebase
+## Arquitectura elegida: Firebase + Cloudflare + Cloudinary
 
-El propietario pidió evaluar Firebase como backend en lugar de la arquitectura previa con Supabase.
+El propietario eligió Firebase para cuentas y datos, un Worker de Cloudflare para Telegram y Cloudinary para las fotografías, en lugar de la arquitectura previa con Supabase.
 No se ha activado facturación ni se ha creado o conectado un proyecto Firebase.
 
 | Necesidad | Servicio propuesto |
 | --- | --- |
 | Acceso con Google | Firebase Authentication |
 | Clientas, citas, historial y configuración | Cloud Firestore |
-| Autorización y validación | Security Rules y, si se elige Blaze, Cloud Functions |
+| Autorización y validación | Security Rules y Worker de Cloudflare |
 | Reservas simultáneas y cambio único | Transacciones y validaciones del backend |
-| Fotografías | Cloud Storage for Firebase si se elige Blaze |
-| Envío privado a Telegram | Cloud Functions si se elige Blaze |
+| Fotografías | Cloudinary |
+| Envío privado a Telegram | Worker de Cloudflare |
 | Publicación de la interfaz estática | Firebase Hosting |
 | Código y documentación | Este repositorio de GitHub |
 
@@ -55,11 +55,11 @@ Cloud Functions en producción y Cloud Storage for Firebase requieren Blaze y un
 Blaze ofrece cuotas sin costo, pero el uso adicional y otros recursos pueden generar cargos.
 No se garantiza costo cero. Las alertas de presupuesto no son un tope de gasto.
 
-Para mantener Spark sin facturación, las fotografías y el envío privado a Telegram necesitarían servicios externos. Es una alternativa por evaluar, no una integración existente.
+Se mantendrá Firebase en Spark. El Worker guardará los secretos y comprobará los permisos antes de enviar Telegram o autorizar fotografías en Cloudinary. La integración todavía no está construida ni desplegada.
 
 ## Decisiones pendientes
 
-1. Mantener la condición de no activar facturación, o permitir Firebase Blaze para integrar las funciones y las fotos.
+1. Configurar Firebase Spark, Cloudflare Workers y Cloudinary dentro de sus cuotas gratuitas.
 2. Identificar o crear el proyecto Firebase del propietario y configurar los accesos necesarios.
 3. Definir servicios, precios, duración, días de atención y los cuatro horarios.
 4. Definir cancelaciones, reservas pendientes, cambios de citas y bloqueos del calendario.
