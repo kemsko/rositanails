@@ -21,8 +21,12 @@ export type { Appointment, BookingInput, Settings };
 export type Me = { uid: string; email: string; staff: boolean };
 export type Photo = { id: string; kind: "reference" | "result" };
 export const demo = import.meta.env.VITE_DEMO_MODE === "true";
+export const frontendOnly =
+  !demo && import.meta.env.VITE_FRONTEND_ONLY === "true";
 export const apiUrl = (import.meta.env.VITE_API_URL ?? "").replace(/\/$/, "");
-const auth = getAuth(initializeApp(firebaseConfig));
+const firebaseAuth = () => getAuth(initializeApp(firebaseConfig));
+const reservationsPending =
+  "Las reservas en línea y el acceso a tu cuenta estarán disponibles pronto.";
 const demoMe: Me = {
   uid: "demo-client",
   email: "clienta@example.invalid",
@@ -83,6 +87,10 @@ export function watchSession(
   callback: (user: Me | null) => void,
   onError: (message: string) => void = () => {},
 ) {
+  if (frontendOnly) {
+    callback(null);
+    return () => {};
+  }
   if (demo) {
     listener = callback;
     callback(currentDemo);
@@ -91,7 +99,7 @@ export function watchSession(
     };
   }
   let sequence = 0;
-  const unsubscribe = onAuthStateChanged(auth, async (user) => {
+  const unsubscribe = onAuthStateChanged(firebaseAuth(), async (user) => {
     const current = ++sequence;
     // Google authentication alone does not authorize a Rosita session.
     callback(null);
@@ -112,25 +120,28 @@ export function watchSession(
   };
 }
 export async function login(staff = false) {
+  if (frontendOnly) throw new Error(reservationsPending);
   if (demo) {
     currentDemo = { ...demoMe, staff };
     listener?.(currentDemo);
     return;
   }
-  await signInWithPopup(auth, new GoogleAuthProvider());
+  await signInWithPopup(firebaseAuth(), new GoogleAuthProvider());
 }
 export async function logout() {
+  if (frontendOnly) return;
   if (demo) {
     currentDemo = null;
     listener?.(null);
-  } else await signOut(auth);
+  } else await signOut(firebaseAuth());
 }
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  if (frontendOnly) throw new Error(reservationsPending);
   if (!apiUrl)
     throw new Error(
       "Todavía estamos preparando las reservas en línea. Intentá más tarde.",
     );
-  const token = await auth.currentUser?.getIdToken();
+  const token = await firebaseAuth().currentUser?.getIdToken();
   const headers = new Headers(options.headers);
   if (token) headers.set("Authorization", `Bearer ${token}`);
   if (options.body && !(options.body instanceof FormData))
@@ -142,7 +153,11 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   return data as T;
 }
 export const getSettings = async () =>
-  demo ? demoData().settings : request<Settings>("/settings");
+  frontendOnly
+    ? structuredClone({ ...initialSettings, bookingEnabled: false })
+    : demo
+      ? demoData().settings
+      : request<Settings>("/settings");
 export type AppointmentPage = {
   items: Appointment[];
   nextCursor: string | null;
@@ -300,7 +315,8 @@ export async function uploadPhoto(
   });
 }
 export async function photoUrl(id: string) {
-  const token = await auth.currentUser?.getIdToken();
+  if (frontendOnly) throw new Error(reservationsPending);
+  const token = await firebaseAuth().currentUser?.getIdToken();
   const response = await fetch(`${apiUrl}/photos/${id}`, {
     headers: { Authorization: `Bearer ${token}` },
   });

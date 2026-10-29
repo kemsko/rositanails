@@ -8,6 +8,13 @@ export function productionConfig(
   if (env.VITE_DEMO_MODE && env.VITE_DEMO_MODE !== "false") {
     throw new Error("La publicación real requiere VITE_DEMO_MODE=false.");
   }
+  if (env.VITE_FRONTEND_ONLY === "true") {
+    return {
+      apiUrl: null,
+      origin: "https://rositanails.firebaseapp.com",
+      frontendOnly: true,
+    };
+  }
   if (!env.VITE_API_URL?.trim()) {
     throw new Error(
       "Falta la URL de la API real. Configurá ROSITA_API_URL en las variables de GitHub Actions antes de publicar.",
@@ -47,5 +54,9 @@ if (
   import.meta.url === pathToFileURL(process.argv[1]).href
 ) {
   const config = productionConfig();
-  console.log(`Modo real comprobado. API: ${config.apiUrl}`);
+  console.log(
+    config.frontendOnly
+      ? "Publicación de la web real: reservas pendientes de conexión."
+      : `Modo real comprobado. API: ${config.apiUrl}`,
+  );
 }

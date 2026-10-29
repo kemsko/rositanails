@@ -45,7 +45,7 @@ npm run worker:check
 
 Para una demostración local, crear `.env.local` con `VITE_DEMO_MODE=true` y ejecutar `npm run dev`.
 
-Para conectar las cuentas y publicar, seguir **[la guía de instalación](docs/INSTALL.md)**. Nunca introducir claves privadas en variables `VITE_` o en GitHub.
+Para publicar primero la web sin esperar al Worker, seguir **[la guía de publicación](docs/PUBLISH.md)**. Para conectar las cuentas después, seguir **[la guía de instalación](docs/INSTALL.md)**. Nunca introducir claves privadas en variables `VITE_` o en GitHub.
 
 ## Documentación para retomar el trabajo
 

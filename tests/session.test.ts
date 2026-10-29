@@ -23,6 +23,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   mocks.observer = undefined;
   vi.stubEnv("VITE_DEMO_MODE", "false");
+  vi.stubEnv("VITE_FRONTEND_ONLY", "false");
   vi.stubEnv("VITE_API_URL", "https://rosita-api.example.workers.dev");
 });
 afterEach(() => {
@@ -113,5 +114,67 @@ describe("real Google session verification", () => {
     await pending;
     expect(session.mock.calls).toEqual([[null], [null]]);
     expect(error).not.toHaveBeenCalled();
+  });
+});
+
+describe("published frontend before reservations launch", () => {
+  beforeEach(() => {
+    vi.stubEnv("VITE_FRONTEND_ONLY", "true");
+    vi.stubEnv("VITE_API_URL", "");
+  });
+
+  it("shows only the real brand settings and keeps bookings closed without any API request", async () => {
+    const fetch = vi.fn();
+    vi.stubGlobal("fetch", fetch);
+    const api = await import("../src/api");
+    const settings = await api.getSettings();
+    expect(api.demo).toBe(false);
+    expect(api.frontendOnly).toBe(true);
+    expect(settings.brand).toBe("Rosita Nails");
+    expect(settings.bookingEnabled).toBe(false);
+    expect(settings.services).toEqual([]);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("does not create a local account or start Google verification before account access opens", async () => {
+    const api = await import("../src/api");
+    const session = vi.fn();
+    const error = vi.fn();
+    api.watchSession(session, error);
+    expect(session.mock.calls).toEqual([[null]]);
+    expect(mocks.observer).toBeUndefined();
+    expect(error).not.toHaveBeenCalled();
+    await expect(api.login()).rejects.toThrow("estarán disponibles pronto");
+    expect(mocks.popup).not.toHaveBeenCalled();
+  });
+
+  it("publishes a visible reservation status with disabled entry points and no demo accounts", async () => {
+    const { renderToStaticMarkup } = await import("react-dom/server");
+    const { createElement } = await import("react");
+    const { default: App } = await import("../src/App");
+    const html = renderToStaticMarkup(createElement(App));
+    expect(html).toContain("Las reservas en línea estarán disponibles pronto");
+    expect(html.match(/disabled=""/g)).toHaveLength(2);
+    expect(html).not.toContain("Mis citas");
+    expect(html).not.toContain("Acceso del personal");
+    expect(html).not.toContain("Demostración");
+    expect(html).not.toContain("Ingresar");
+  });
+
+  it("rejects reservation writes without using demo storage or the API", async () => {
+    const fetch = vi.fn();
+    vi.stubGlobal("fetch", fetch);
+    const api = await import("../src/api");
+    await expect(
+      api.book({
+        date: "2026-12-01",
+        slot: "09:00",
+        serviceId: "gel",
+        name: "Clienta",
+        phone: "55555555",
+        note: "",
+      }),
+    ).rejects.toThrow("estarán disponibles pronto");
+    expect(fetch).not.toHaveBeenCalled();
   });
 });

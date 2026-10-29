@@ -1272,3 +1272,20 @@ legend {
   border-radius: 4px;
   margin-bottom: 12px;
 }
+
+.availability-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 24px;
+  background: #f3e9e2;
+  color: #69424b;
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+  line-height: 1.6;
+  text-align: center;
+}
+.availability-banner svg {
+  flex-shrink: 0;
+}

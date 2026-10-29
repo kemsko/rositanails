@@ -24,7 +24,7 @@ No hay herramienta de navegador disponible en este entorno para comprobar visual
 - Cloudflare: el propietario confirmó que el Worker aún no existe. Se preparó un workflow de despliegue desde GitHub Actions. El Account ID ya está configurado a partir de la captura del propietario. La red del entorno devuelve 403 antes de autenticar contra la API de Cloudflare; el despliegue se hará mediante GitHub Actions. Falta guardar CLOUDFLARE_API_TOKEN como Repository secret, ejecutar el despliegue y configurar los secretos de ejecución. No se ha verificado el token ni un despliegue real.
 - Cloudinary: el propietario creó la carpeta `ROSITA`. Las subidas se asignan a esa carpeta. El Cloud name `dvnhszmdt` ya está configurado en el código. Falta configurar API key y API secret directamente como secretos en Cloudflare y verificar una subida real.
 - Telegram: falta configurar el bot y su chat en los secretos del Worker y probar entrega.
-- Frontend: el propietario pidió publicación real, sin modo demo, en `rositanails.firebaseapp.com`. Están preparados el sitio y el workflow de Hosting con comprobación de API real. Falta autorizar Firebase, configurar la URL del Worker conectado y publicar Hosting. El estado de una posible publicación externa no se pudo verificar; no hay despliegue exitoso confirmado desde esta sesión.
+- Frontend: el propietario pidió publicar primero la web real en `rositanails.firebaseapp.com` y posponer el Worker. El workflow usa `VITE_FRONTEND_ONLY=true`, sin demo ni reservas simuladas; la publicación ya no depende de Cloudflare. Falta comprobar la autorización de Firebase y obtener un despliegue de Hosting exitoso. El estado de una posible publicación externa no se pudo verificar; no hay despliegue exitoso confirmado desde esta sesión.
 - Negocio: faltan precios, servicios, horarios definitivos, contacto, imágenes y revisión de las reglas de cancelación.
 - Respaldos: falta implementar y probar el procedimiento de respaldo/restauración de datos e imágenes por separado del código.
 
@@ -37,3 +37,7 @@ El código anterior se dio por perdido. Se reconstruyó desde el texto proporcio
 ## Protección de proyectos existentes
 
 El propietario excluyó expresamente el Worker/proyecto de opticafel. No se ha creado ni modificado ningún Worker en Cloudflare desde esta sesión. El despliegue de Rosita solo creará el recurso nuevo `rosita-api`, con una comprobación que se detiene si ya existe un Worker con ese nombre. Se eliminó el código que administraba el subdominio de la cuenta. No se renombrarán ni se actualizarán otros Workers. El rate limiter usa un namespace propio de este repositorio para evitar compartir los contadores del valor de ejemplo `1001`.
+
+## Publicación por etapas
+
+La instrucción más reciente autoriza publicar la web antes del Worker. El modo frontend-only muestra el sitio real y mantiene las reservas deshabilitadas; no inventa servicios ni precios. El Worker, Cloudinary y Telegram se conectarán después. Las instrucciones actuales están en `PUBLISH.md`.

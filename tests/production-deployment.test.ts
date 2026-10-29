@@ -31,6 +31,23 @@ describe("production deployment configuration", () => {
     );
     expect(output).toBe("rejected");
   });
+  it("allows explicit real frontend-only publishing without an API", () => {
+    const output = run(
+      `const {productionConfig}=await import(${JSON.stringify(configuration)});console.log(JSON.stringify(productionConfig({VITE_DEMO_MODE:'false',VITE_FRONTEND_ONLY:'true'})))`,
+    );
+    expect(JSON.parse(output)).toEqual({
+      apiUrl: null,
+      origin: "https://rositanails.firebaseapp.com",
+      frontendOnly: true,
+    });
+  });
+  it("still refuses demo when frontend-only publication is selected", () => {
+    expect(
+      run(
+        `const {productionConfig}=await import(${JSON.stringify(configuration)});try{productionConfig({VITE_DEMO_MODE:'true',VITE_FRONTEND_ONLY:'true'});console.log('accepted')}catch{console.log('rejected')}`,
+      ),
+    ).toBe("rejected");
+  });
   it("accepts the real HTTPS API with demo disabled", () => {
     const output = run(
       `const {productionConfig}=await import(${JSON.stringify(configuration)});console.log(JSON.stringify(productionConfig({VITE_DEMO_MODE:'false',VITE_API_URL:'https://rosita-api.example.workers.dev/'})))`,
@@ -42,6 +59,16 @@ describe("production deployment configuration", () => {
   });
 });
 describe("real API preflight", () => {
+  it("does not call a Worker during frontend-only publishing", () => {
+    const output = run(
+      `const {verifyProductionApi}=await import(${JSON.stringify(preflight)});const result=await verifyProductionApi({frontendOnly:true,apiUrl:null},async()=>{throw Error('Worker must not be called');});console.log(JSON.stringify(result))`,
+    );
+    expect(JSON.parse(output)).toEqual({
+      bookingsOpen: false,
+      frontendOnly: true,
+    });
+  });
+
   it.each([
     { status: 503, cors: true, expectation: "rejected" },
     { status: 200, cors: false, expectation: "rejected" },

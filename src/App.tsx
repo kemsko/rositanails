@@ -172,6 +172,7 @@ export default function App() {
     }
   };
   const choose = (id: string) => {
+    if (api.frontendOnly) return;
     setBooking(id);
     setMenu(false);
   };
@@ -228,14 +229,16 @@ export default function App() {
           >
             Servicios
           </a>
-          <button
-            onClick={() => {
-              setView("appointments");
-              setMenu(false);
-            }}
-          >
-            Mis citas
-          </button>
+          {!api.frontendOnly && (
+            <button
+              onClick={() => {
+                setView("appointments");
+                setMenu(false);
+              }}
+            >
+              Mis citas
+            </button>
+          )}
           {user?.staff && (
             <button
               onClick={() => {
@@ -246,22 +249,38 @@ export default function App() {
               Panel de Rosita
             </button>
           )}
-          {user ? (
-            <button
-              className="icon-button"
-              aria-label="Cerrar sesión"
-              onClick={() => api.logout()}
-            >
-              <LogOut size={18} />
-            </button>
-          ) : (
-            <button onClick={() => signIn()}>Ingresar</button>
-          )}
-          <button className="button small" onClick={() => choose("")}>
-            Reservar una cita <ArrowRight size={15} />
+          {!api.frontendOnly &&
+            (user ? (
+              <button
+                className="icon-button"
+                aria-label="Cerrar sesión"
+                onClick={() => api.logout()}
+              >
+                <LogOut size={18} />
+              </button>
+            ) : (
+              <button onClick={() => signIn()}>Ingresar</button>
+            ))}
+          <button
+            className="button small"
+            disabled={api.frontendOnly}
+            aria-describedby={api.frontendOnly ? "booking-status" : undefined}
+            onClick={() => choose("")}
+          >
+            {api.frontendOnly ? "Reservas próximamente" : "Reservar una cita"}
+            <ArrowRight size={15} />
           </button>
         </nav>
       </header>
+      {api.frontendOnly && (
+        <div id="booking-status" className="availability-banner" role="status">
+          <CalendarDays size={18} aria-hidden="true" />
+          <span>
+            Las reservas en línea estarán disponibles pronto. Todavía no
+            recibimos solicitudes de cita por esta web.
+          </span>
+        </div>
+      )}
       {error && (
         <div className="notice error" role="alert">
           {error}
@@ -295,8 +314,18 @@ export default function App() {
                 Tu próxima cita empieza aquí.
               </p>
               <div className="hero-actions">
-                <button className="button" onClick={() => choose("")}>
-                  Reservá tu momento <ArrowRight size={18} />
+                <button
+                  className="button"
+                  disabled={api.frontendOnly}
+                  aria-describedby={
+                    api.frontendOnly ? "booking-status" : undefined
+                  }
+                  onClick={() => choose("")}
+                >
+                  {api.frontendOnly
+                    ? "Reservas próximamente"
+                    : "Reservá tu momento"}
+                  <ArrowRight size={18} />
                 </button>
                 <a className="text-link" href="#servicios">
                   Explorá los servicios
@@ -305,9 +334,19 @@ export default function App() {
               <div className="hero-note">
                 <ShieldCheck size={19} />
                 <span>
-                  Reservá con tranquilidad.
-                  <br />
-                  <strong>Rosita confirma tu cita personalmente.</strong>
+                  {api.frontendOnly ? (
+                    <>
+                      Estamos preparando tus próximos momentos de cuidado.
+                      <br />
+                      <strong>Pronto podrás reservar desde aquí.</strong>
+                    </>
+                  ) : (
+                    <>
+                      Reservá con tranquilidad.
+                      <br />
+                      <strong>Rosita confirma tu cita personalmente.</strong>
+                    </>
+                  )}
                 </span>
               </div>
             </div>
@@ -491,9 +530,11 @@ export default function App() {
           <Flower2 size={17} />
         </a>
         <span>Hecho con amor, un detalle a la vez.</span>
-        <button onClick={() => setView("admin")}>Acceso del personal</button>
+        {!api.frontendOnly && (
+          <button onClick={() => setView("admin")}>Acceso del personal</button>
+        )}
       </footer>
-      {booking !== null && (
+      {!api.frontendOnly && booking !== null && (
         <Booking
           settings={settings}
           serviceId={booking}

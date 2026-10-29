@@ -2,6 +2,7 @@ import { pathToFileURL } from "node:url";
 import { productionConfig } from "./production-config.mjs";
 
 export async function verifyProductionApi(config, fetchImpl = fetch) {
+  if (config.frontendOnly) return { bookingsOpen: false, frontendOnly: true };
   const response = await fetchImpl(`${config.apiUrl}/settings`, {
     headers: { Origin: config.origin },
     signal: AbortSignal.timeout(15000),
@@ -35,10 +36,16 @@ if (
   import.meta.url === pathToFileURL(process.argv[1]).href
 ) {
   const result = await verifyProductionApi(productionConfig());
-  console.log("Conexión real y acceso desde firebaseapp.com comprobados.");
-  console.log(
-    result.bookingsOpen
-      ? "El negocio tiene reservas habilitadas y servicios activos."
-      : "Publicación para configurar el negocio: el personal aún debe cargar servicios o habilitar reservas.",
-  );
+  if (result.frontendOnly) {
+    console.log(
+      "Publicación solo de la web; no se consultó ni se modificó ningún Worker. Las reservas permanecen deshabilitadas.",
+    );
+  } else {
+    console.log("Conexión real y acceso desde firebaseapp.com comprobados.");
+    console.log(
+      result.bookingsOpen
+        ? "El negocio tiene reservas habilitadas y servicios activos."
+        : "Publicación para configurar el negocio: el personal aún debe cargar servicios o habilitar reservas.",
+    );
+  }
 }
